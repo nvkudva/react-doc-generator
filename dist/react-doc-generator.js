@@ -62,7 +62,8 @@ if (_command2.default.args.length !== 1) {
         excludeDir: _command2.default.ignore
     }, function (err, content, filename, next) {
         if (err) {
-            throw err;
+            console.error("Error even before processing ", filename);
+            console.error(err);
         }
 
         try {
@@ -86,13 +87,19 @@ if (_command2.default.args.length !== 1) {
 
                 // validate default values
                 if (component.props) {
+                    var propswithIssues = [];
                     Object.keys(component.props).forEach(function (key) {
                         var obj = component.props[key];
                         if (obj.defaultValue) {
-                            var isString = obj.type.name === 'string' && typeof obj.defaultValue.value === 'string';
+                            try {
+                                var isString = obj.type.name === 'string' && typeof obj.defaultValue.value === 'string';
+                            } catch (e) {
+                                console.error("Error in:", filename, "Component:", component.displayName, "Prop:", key, " has issue. Please carefully check if propType and defaultvalue are defined and matching and valid");
+                                propswithIssues.push(key);
+                            }
                             var isInvalidValue = /[^\w\s.&:\-+*,!@%$]+/igm.test(obj.defaultValue.value);
                             if (isInvalidValue && !isString) {
-                                obj.defaultValue.value = '<See the source code>';
+                                obj.defaultValue.value = 'ERROR: Invalid Value';
                             }
                         }
                         if (obj.description) {
@@ -104,20 +111,20 @@ if (_command2.default.args.length !== 1) {
                             obj.description = processedDescription;
                         }
                     });
+                    if (propswithIssues.length > 0) throw new Error(component.displayName + "Component has issues in props: " + propswithIssues);
                 }
-
                 return component;
             });
             templateData.files.push({ filename: filename, components: components });
             table.push([filename, components.length, _colors2.default.green('OK.')]);
         } catch (e) {
-            table.push([filename, 0, _colors2.default.red('You have to export at least one valid React Class!')]);
+            table.push([filename, 0, _colors2.default.red('ERROR:' + e.message + '\nYou have to export at least one valid React Class!')]);
         }
 
         next();
     }, function (err) {
         if (err) {
-            throw err;
+            console.error("Unknown ERROR:", err);
         }
 
         if (templateData.files.length === 0) {

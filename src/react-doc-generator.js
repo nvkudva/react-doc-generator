@@ -49,7 +49,8 @@ if (Command.args.length !== 1) {
         },
         (err, content, filename, next) => {
             if (err) {
-                throw err;
+                console.error("Error even before processing ", filename);
+                console.error(err);
             }
 
             try {
@@ -73,11 +74,16 @@ if (Command.args.length !== 1) {
 
                     // validate default values
                     if (component.props) {
+                        let propswithIssues=[];
                         Object.keys(component.props).forEach(key => {
                             let obj = component.props[key];
                             if (obj.defaultValue) {
-                                const isString = obj.type.name === 'string'
-                                    && typeof obj.defaultValue.value === 'string';
+                                try {
+                                    var isString = obj.type.name === 'string' && typeof obj.defaultValue.value === 'string';
+                                }catch (e){
+                                    console.error("Error in:",filename,"Component:",component.displayName, "Prop:", key, " has issue. Please carefully check if propType and defaultvalue are defined and matching and valid");
+                                    propswithIssues.push(key);
+                                }
                                 const isInvalidValue = (/[^\w\s.&:\-+*,!@%$]+/igm).test(obj.defaultValue.value);
                                 if (isInvalidValue && !isString) {
                                     obj.defaultValue.value = 'ERROR: Invalid Value';
@@ -92,8 +98,8 @@ if (Command.args.length !== 1) {
                               obj.description = processedDescription;
                             }
                         });
+                        if(propswithIssues.length>0) throw new Error(component.displayName+" Component has issues in props: "+ propswithIssues)
                     }
-
                     return component;
                 });
                 templateData.files.push({ filename, components });
@@ -106,7 +112,7 @@ if (Command.args.length !== 1) {
                 table.push([
                     filename,
                     0,
-                    Colors.red(`You have to export at least one valid React Class!`)
+                    Colors.red(`${e.message}\nYou have to export at least one valid React Class!`)
                 ]);
             }
 
@@ -114,7 +120,7 @@ if (Command.args.length !== 1) {
         },
         err => {
             if (err) {
-                throw err;
+                console.error("Unknown ERROR:",err);
             }
 
             if (templateData.files.length === 0) {
