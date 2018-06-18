@@ -80,7 +80,7 @@ if (Command.args.length !== 1) {
                                     && typeof obj.defaultValue.value === 'string';
                                 const isInvalidValue = (/[^\w\s.&:\-+*,!@%$]+/igm).test(obj.defaultValue.value);
                                 if (isInvalidValue && !isString) {
-                                    obj.defaultValue.value = '<See the source code>';
+                                    obj.defaultValue.value = 'ERROR: Invalid Value';
                                 }
                             }
                             if (obj.description) {
