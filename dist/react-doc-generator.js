@@ -111,14 +111,14 @@ if (_command2.default.args.length !== 1) {
                             obj.description = processedDescription;
                         }
                     });
-                    if (propswithIssues.length > 0) throw new Error(component.displayName + "Component has issues in props: " + propswithIssues);
+                    if (propswithIssues.length > 0) throw new Error(component.displayName + " Component has issues in props: " + propswithIssues);
                 }
                 return component;
             });
             templateData.files.push({ filename: filename, components: components });
             table.push([filename, components.length, _colors2.default.green('OK.')]);
         } catch (e) {
-            table.push([filename, 0, _colors2.default.red('ERROR:' + e.message + '\nYou have to export at least one valid React Class!')]);
+            table.push([filename, 0, _colors2.default.red(e.message + '\nYou have to export at least one valid React Class!')]);
         }
 
         next();
